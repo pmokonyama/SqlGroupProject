@@ -1,0 +1,116 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class DatabaseReports {
+    public static void main(String[] args) {
+        // Database credentials
+        String url = "jdbc:mysql://localhost:3306/banking_db";
+        String user = "root";
+        String password = "root";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             Scanner scanner = new Scanner(System.in)) {
+
+            System.out.println("Connected to the database!");
+
+            // Ask for Customer ID
+            System.out.print("Enter Customer ID: ");
+            String customerId = scanner.nextLine(); // Accepts alphanumeric customer IDs
+
+            // Check if customer exists
+            if (!isValidCustomer(conn, customerId)) {
+                System.out.println("Invalid Customer ID. No such customer found.");
+                return;
+            }
+
+            // Fetch and display reports
+            getCustomerDetails(conn, customerId);
+            getCustomerBalance(conn, customerId);
+            getCheckingTransactions(conn, customerId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ✅ 1️⃣ Check if Customer Exists
+    private static boolean isValidCustomer(Connection conn, String customerId) throws SQLException {
+        String query = "SELECT COUNT(*) FROM customers WHERE customer_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
+            return rs.getInt(1) > 0;
+        }
+    }
+
+    // ✅ 2️⃣ Get Customer Details (Address Info)
+    private static void getCustomerDetails(Connection conn, String customerId) throws SQLException {
+        String query = "SELECT first_name, last_name, date_of_birth, street, house_number, zip_code, city, country " +
+                "FROM customers WHERE customer_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("\n📌 Customer Details:");
+                System.out.printf("🔹 Name: %s %s\n", rs.getString("first_name"), rs.getString("last_name"));
+                System.out.printf("🔹 Date of Birth: %s\n", rs.getDate("date_of_birth"));
+                System.out.printf("🔹 Address: %s %s, %s, %s, %s\n",
+                        rs.getString("house_number"), rs.getString("street"),
+                        rs.getString("zip_code"), rs.getString("city"), rs.getString("country"));
+            } else {
+                System.out.println("No customer found.");
+            }
+        }
+    }
+
+    // ✅ 3️⃣ Get Customer Total Balance
+    private static void getCustomerBalance(Connection conn, String customerId) throws SQLException {
+        String query = "SELECT SUM(balance) AS total_balance FROM accounts WHERE customer_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next() && rs.getBigDecimal("total_balance") != null) {
+                System.out.println("\n📌 Total Balance:");
+                System.out.printf("💰 R%.2f\n", rs.getBigDecimal("total_balance"));
+            } else {
+                System.out.println("No accounts found for this customer.");
+            }
+        }
+    }
+
+    // ✅ 4️⃣ Get Checking Account Transactions
+    private static void getCheckingTransactions(Connection conn, String customerId) throws SQLException {
+        String query = "SELECT a.account_number, t.transaction_date, t.amount, t.transaction_type " +
+                "FROM transactions t " +
+                "JOIN accounts a ON t.account_number = a.account_number " +
+                "WHERE a.customer_id = ? AND a.account_type = 'CHECKING' " +
+                "ORDER BY t.transaction_date DESC";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+
+            System.out.println("\n📌 Checking Account Transactions:");
+            if (!rs.isBeforeFirst()) {
+                System.out.println("No transactions found for this customer.");
+                return;
+            }
+
+            System.out.printf("%-15s %-15s %-10s %-12s\n", "Account #", "Date", "Amount", "Type");
+            System.out.println("-------------------------------------------------");
+
+            while (rs.next()) {
+                System.out.printf("%-15s %-15s R%-10.2f %-12s\n",
+                        rs.getString("account_number"),
+                        rs.getDate("transaction_date"),
+                        rs.getBigDecimal("amount"),
+                        rs.getString("transaction_type"));
+            }
+        }
+    }
+}
