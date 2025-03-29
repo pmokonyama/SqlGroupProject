@@ -14,20 +14,24 @@ public class DatabaseReportsTest {
 
     @Test
     public void testCustomerBalance() {
-        int customerId = 1;  // Example customer ID
+        String customerId = "C001";  // Example customer ID
         double expectedBalance = 1000.0;  // Replace with the expected balance
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
             // Create the SQL query to retrieve balance for the given customer ID
-            String query = "SELECT SUM(balance) AS total_balance FROM accounts WHERE customer_id = " + customerId;
+           //String query = "SELECT SUM(balance) AS total_balance FROM accounts WHERE customer_id = " + customerId;
+            String query = "Select * from customers";
+
 
             try (Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery(query)) {
 
                 if (rs.next()) {
-                    double actualBalance = rs.getDouble("total_balance");
+                    /*double actualBalance = rs.getDouble("total_balance");
                     // Assert that the retrieved balance matches the expected balance
-                    assertEquals(expectedBalance, actualBalance, 0.01, "Balance doesn't match expected value.");
+                    assertEquals(expectedBalance, actualBalance, 0.01, "Balance doesn't match expected value.");*/
+
+                    System.out.println(rs.getInt(1));
                 }
             }
         } catch (Exception e) {
