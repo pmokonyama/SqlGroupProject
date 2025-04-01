@@ -1,4 +1,4 @@
-# **Online Banking Systems**  
+# **Online Banking Systems - Banking_DB**  
 
 ## **Project Overview**  
 This project focuses on designing, implementing, and validating a robust database system for an online banking platform. Additionally, we will develop Java code to interact with and rigorously test the database, ensuring seamless functionality and efficiency.  
@@ -22,7 +22,7 @@ This project presents an exciting opportunity for us to work together to design,
 1. Clone the repository:  
    ```sh
    git clone https://github.com/your-repo/online-banking-system.git
-   cd online-banking-system
+   cd Banking_DB
    ```  
 2. Set up the database:  
    - Import the provided SQL schema into MySQL/PostgreSQL.  
@@ -32,5 +32,5 @@ This project presents an exciting opportunity for us to work together to design,
 ## **Contributors**  
 - [Mamoholane Mogotlane]  
 - [Palesa Mokonyama]
-- [Khensani& Drew - They will be presenting the project]
+- [Khensani & Drew - They will be presenting the project]
   
